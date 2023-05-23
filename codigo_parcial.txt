@@ -1,0 +1,228 @@
+//Francisco Martinez Balian Primer Parcial SPD Div B
+#define LED_VERDE 11
+#define LED_ROJO 12
+#define BOTON_SUBIR A2
+#define BOTON_PARAR A1
+#define BOTON_BAJAR A0
+#define MEDIO 10
+#define SUPERIOR_IZQUIERDA 9
+#define SUPERIOR 8
+#define SUPERIOR_DERECHA 7
+#define INFERIOR_IZQUIERDA 6
+#define INFERIOR 5
+#define INFERIOR_DERECHA 4
+
+int lecturaSube;
+int lecturaBaja;
+int lecturaPausa;
+int estadoDelSistema = 0; //Inicia quieto
+int numeroDePiso = 0; //Inicia en el piso inicial
+
+void setup()
+{
+  pinMode(BOTON_SUBIR, INPUT_PULLUP);
+  pinMode(BOTON_BAJAR, INPUT_PULLUP);  
+  pinMode(BOTON_PARAR, INPUT_PULLUP);
+  
+  pinMode(LED_VERDE, OUTPUT);
+  pinMode(LED_ROJO, OUTPUT);
+  
+  pinMode(MEDIO, OUTPUT);
+  pinMode(SUPERIOR_IZQUIERDA, OUTPUT);
+  pinMode(SUPERIOR, OUTPUT);
+  pinMode(SUPERIOR_DERECHA, OUTPUT);
+  pinMode(INFERIOR_IZQUIERDA, OUTPUT);
+  pinMode(INFERIOR_DERECHA, OUTPUT);
+  pinMode(INFERIOR, OUTPUT);
+  
+  Serial.begin(9600);
+}
+
+void loop()
+{
+  Serial.println("Usted esta en el piso numero: " + String(numeroDePiso));
+  prenderSegmentos(numeroDePiso);
+  
+  lecturaSube = digitalRead(BOTON_SUBIR);
+  lecturaBaja = digitalRead(BOTON_BAJAR);
+  lecturaPausa = digitalRead(BOTON_PARAR);
+  
+  estadoAscensor(lecturaSube, lecturaBaja, lecturaPausa, 0, 9);
+  ledsAscensorMovimiento(LED_ROJO, LED_VERDE, 0, 9);
+}
+  
+void estadoAscensor(int subida, int bajada, int pausado, int primerPiso, int ultimoPiso)
+{
+  if(subida == 0 && numeroDePiso < ultimoPiso)
+  {
+    estadoDelSistema = 1; //Sube
+    Serial.println("Subiendo");
+  }
+  else if(bajada == 0 && numeroDePiso > primerPiso)
+  {
+    estadoDelSistema = -1; //Baja
+    Serial.println("Bajando"); 
+  }
+  else if(pausado == 0)
+  {
+    estadoDelSistema = 0; //Se queda quieto
+    Serial.println("Ascensor quieto");
+  }
+}
+
+//Estado del ascensor y prendido y apagado de leds
+void ledsAscensorMovimiento(int ledQuieto, int ledMovimiento, int primerPiso, int ultimoPiso)
+{
+  if(estadoDelSistema == 0)
+  {
+    prender(ledQuieto);
+    apagar(ledMovimiento);
+    delay(500);
+  }
+  else 
+  {
+    if(estadoDelSistema == 1) //Pregunto si sube
+    {
+      subirAscensor(ultimoPiso);
+    }
+    else if(estadoDelSistema == -1) //Pregunto si baja
+    {
+      bajarAscensor(primerPiso);
+    }
+    apagar(ledQuieto);
+    prender(ledMovimiento);
+    delay(3000);
+  }
+}
+
+void subirAscensor(int ultimo_piso)
+{
+  if(numeroDePiso < ultimo_piso)
+  {
+    numeroDePiso += 1;
+  }
+  else
+  {
+    Serial.println("Piso final");
+    estadoDelSistema = 0;
+  }
+}
+
+void bajarAscensor(int primer_piso)
+{
+  if(numeroDePiso > primer_piso)
+  {
+    numeroDePiso -= 1;
+  }
+  else
+  {
+    Serial.println("Piso inicial");
+    estadoDelSistema = 0;
+  }
+}
+
+void prender(int ledEncender)
+{
+  digitalWrite(ledEncender, HIGH);
+}
+void apagar(int ledApagar)
+{
+  digitalWrite(ledApagar, LOW);
+}
+
+void prenderSegmentos(int piso)
+{
+  switch(piso)
+  {
+    case 0:
+    	prender(SUPERIOR);
+    	prender(SUPERIOR_IZQUIERDA);
+    	prender(SUPERIOR_DERECHA);
+    	prender(INFERIOR);
+    	prender(INFERIOR_IZQUIERDA);
+    	prender(INFERIOR_DERECHA);
+    	apagar(MEDIO);
+    break;
+    case 1:
+    	prender(SUPERIOR_DERECHA);
+    	prender(INFERIOR_DERECHA);
+    	apagar(INFERIOR);
+    	apagar(MEDIO);
+    	apagar(SUPERIOR);
+    	apagar(INFERIOR_IZQUIERDA);
+    	apagar(SUPERIOR_IZQUIERDA);
+    break;
+    case 2:
+    	prender(SUPERIOR);
+    	prender(SUPERIOR_DERECHA);
+    	prender(MEDIO);
+    	prender(INFERIOR);
+    	prender(INFERIOR_IZQUIERDA);
+    	apagar(SUPERIOR_IZQUIERDA);
+    	apagar(INFERIOR_DERECHA);
+    break;
+    case 3:
+    	prender(INFERIOR_DERECHA);
+    	prender(SUPERIOR);
+    	prender(SUPERIOR_DERECHA);
+    	prender(MEDIO);
+    	prender(INFERIOR);
+    	apagar(SUPERIOR_IZQUIERDA);
+    	apagar(INFERIOR_IZQUIERDA);
+    break;
+    case 4:
+    	prender(INFERIOR_DERECHA);
+    	prender(SUPERIOR_DERECHA);
+    	prender(SUPERIOR_IZQUIERDA);
+    	prender(MEDIO);
+    	apagar(SUPERIOR);
+    	apagar(INFERIOR);
+    	apagar(INFERIOR_IZQUIERDA);
+    break;
+    case 5:
+    	prender(INFERIOR_DERECHA);
+    	prender(SUPERIOR);
+    	prender(SUPERIOR_IZQUIERDA);
+    	prender(MEDIO);
+    	prender(INFERIOR);
+    	apagar(SUPERIOR_DERECHA);
+    	apagar(INFERIOR_IZQUIERDA);
+    break;
+    case 6:
+    	prender(SUPERIOR);
+    	prender(SUPERIOR_IZQUIERDA);
+    	prender(INFERIOR);
+    	prender(INFERIOR_IZQUIERDA);
+    	prender(INFERIOR_DERECHA);
+    	prender(MEDIO);
+    	apagar(SUPERIOR_DERECHA);
+    break;
+    case 7:
+    	prender(INFERIOR_DERECHA);
+    	prender(SUPERIOR_DERECHA);
+    	prender(SUPERIOR);
+    	prender(SUPERIOR_IZQUIERDA);
+    	apagar(MEDIO);
+    	apagar(INFERIOR);
+    	apagar(INFERIOR_IZQUIERDA);
+    break;
+    case 8:
+    	prender(SUPERIOR);
+    	prender(SUPERIOR_IZQUIERDA);
+    	prender(SUPERIOR_DERECHA);
+    	prender(INFERIOR);
+    	prender(INFERIOR_IZQUIERDA);
+    	prender(INFERIOR_DERECHA);
+    	prender(MEDIO);
+    break;
+    case 9:
+    	prender(INFERIOR_DERECHA);
+    	prender(SUPERIOR_DERECHA);
+    	prender(SUPERIOR);
+    	prender(SUPERIOR_IZQUIERDA);
+    	prender(MEDIO);
+    	apagar(INFERIOR);
+    	apagar(INFERIOR_IZQUIERDA);
+    break;
+  }
+}
